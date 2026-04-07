@@ -1,6 +1,6 @@
-# Lychee AI
+# Vigil AI
 
-A starter platform for Lychee AI with a Node.js backend and a polished Vigil AI-style frontend.
+A starter platform for Vigil AI with a Node.js backend and a polished Vigil AI-style frontend.
 
 ## Project structure
 
