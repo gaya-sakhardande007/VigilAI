@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lychee AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <h1>Lychee AI</h1>
+      <p>Ask the backend for an AI response and get instant feedback.</p>
+    </header>
+
+    <section class="content">
+      <label for="prompt">Enter a prompt for Lychee AI</label>
+      <textarea id="prompt" placeholder="Type something like \"Explain Lychee AI in one sentence.\""></textarea>
+      <button id="sendButton">Send prompt</button>
+      <div id="result" class="result">Your AI response will appear here.</div>
+    </section>
+
+    <footer>
+      <p>Backend API available at <code>/api/ai</code>.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
