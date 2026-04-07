@@ -1,6 +1,25 @@
 # Vigil AI
 
-A starter platform for Vigil AI with a Node.js backend and a polished Vigil AI-style frontend.
+Vigil AI is a live phishing and scam detection web app that analyzes suspicious links and messages in real time. It uses OpenAI for threat analysis, falls back safely when AI is unavailable, stores waitlist signups in PostgreSQL, and is deployed on Render.
+
+## Live Links
+
+- Live app: `https://vigil-ai-8n28.onrender.com`
+- Health check: `https://vigil-ai-8n28.onrender.com/api/health`
+- GitHub repo: `https://github.com/gaya-sakhardande007/LycheeAI`
+
+## Quick Start
+
+1. Open the live app: `https://vigil-ai-8n28.onrender.com`
+2. Paste a suspicious URL or message into the scanner
+3. Review the AI verdict, confidence score, signals, and recommended action
+
+## What It Does
+
+- Detects phishing links and scam messages in real time
+- Uses OpenAI-powered analysis with resilient fallback detection
+- Captures waitlist signups in PostgreSQL
+- Includes production safeguards like health checks and rate limiting
 
 ## Project structure
 
