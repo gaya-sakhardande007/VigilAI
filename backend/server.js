@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs/promises');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { OpenAI } = require('openai');
 const { Pool } = require('pg');
@@ -9,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const waitlistFilePath = path.join(__dirname, 'data', 'waitlist.json');
 const databaseUrl = process.env.DATABASE_URL || '';
+const adminApiKey = process.env.ADMIN_API_KEY || '';
 
 const openaiKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_key_here'
   ? process.env.OPENAI_API_KEY
@@ -28,8 +30,31 @@ const waitlistPool = databaseUrl
 const waitlistStoreType = waitlistPool ? 'postgres' : 'file';
 const waitlistStoreReady = ensureWaitlistStore();
 
-app.use(express.json());
+app.set('trust proxy', 1);
+app.use(express.json({ limit: '100kb' }));
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-Frame-Options', 'DENY');
+  next();
+});
 app.use(express.static(path.join(__dirname, '../frontend')));
+
+const scanLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many scan requests. Please try again in a few minutes.' }
+});
+
+const waitlistLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many waitlist requests. Please try again later.' }
+});
 
 app.get('/api/hello', (req, res) => {
   res.json({
@@ -107,6 +132,28 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function getAdminToken(req) {
+  const authHeader = req.headers.authorization || '';
+
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7).trim();
+  }
+
+  return (req.headers['x-admin-key'] || '').toString().trim();
+}
+
+function requireAdmin(req, res, next) {
+  if (!adminApiKey) {
+    return res.status(503).json({ error: 'Admin export is not configured.' });
+  }
+
+  if (getAdminToken(req) !== adminApiKey) {
+    return res.status(401).json({ error: 'Unauthorized.' });
+  }
+
+  return next();
+}
+
 async function ensureWaitlistStore() {
   if (!waitlistPool) {
     return;
@@ -136,6 +183,40 @@ async function readWaitlistEntries() {
 
 async function saveWaitlistEntries(entries) {
   await fs.writeFile(waitlistFilePath, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
+}
+
+async function listWaitlistEntries() {
+  if (waitlistPool) {
+    await waitlistStoreReady;
+
+    const result = await waitlistPool.query(
+      `
+        SELECT email, created_at
+        FROM waitlist_entries
+        ORDER BY created_at DESC
+      `
+    );
+
+    return result.rows.map((row) => ({
+      email: row.email,
+      createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : row.created_at
+    }));
+  }
+
+  const entries = await readWaitlistEntries();
+  return [...entries].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+function toCsv(entries) {
+  const rows = ['email,createdAt'];
+
+  for (const entry of entries) {
+    const escapedEmail = `"${entry.email.replace(/"/g, '""')}"`;
+    const escapedCreatedAt = `"${entry.createdAt.replace(/"/g, '""')}"`;
+    rows.push(`${escapedEmail},${escapedCreatedAt}`);
+  }
+
+  return `${rows.join('\n')}\n`;
 }
 
 async function joinWaitlist(email) {
@@ -181,7 +262,7 @@ async function joinWaitlist(email) {
   };
 }
 
-app.post('/api/scan', async (req, res) => {
+app.post('/api/scan', scanLimiter, async (req, res) => {
   const { input } = req.body;
 
   if (!input || typeof input !== 'string') {
@@ -224,7 +305,7 @@ app.post('/api/scan', async (req, res) => {
   }
 });
 
-app.post('/api/waitlist', async (req, res) => {
+app.post('/api/waitlist', waitlistLimiter, async (req, res) => {
   const email = typeof req.body?.email === 'string' ? normalizeEmail(req.body.email) : '';
 
   if (!email) {
@@ -247,6 +328,27 @@ app.post('/api/waitlist', async (req, res) => {
   } catch (error) {
     console.error('Waitlist error:', error.message || error);
     return res.status(500).json({ error: 'Failed to join waitlist.' });
+  }
+});
+
+app.get('/api/admin/waitlist', requireAdmin, async (req, res) => {
+  try {
+    const entries = await listWaitlistEntries();
+
+    if (req.query.format === 'csv') {
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="waitlist-export.csv"');
+      return res.send(toCsv(entries));
+    }
+
+    return res.json({
+      storage: waitlistStoreType,
+      count: entries.length,
+      entries
+    });
+  } catch (error) {
+    console.error('Waitlist export error:', error.message || error);
+    return res.status(500).json({ error: 'Failed to export waitlist.' });
   }
 });
 

@@ -30,6 +30,9 @@ A starter platform for Vigil AI with a Node.js backend and a polished Vigil AI-s
 - `POST /api/scan` accepts JSON `{ input: string }`
 - Returns a structured threat verdict object for the UI
 - `GET /api/health` returns a lightweight deployment health check
+- `POST /api/scan` is rate-limited to 20 requests per 15 minutes per client IP
+- `POST /api/waitlist` is rate-limited to 5 requests per hour per client IP
+- `GET /api/admin/waitlist` exports waitlist entries for admins when `ADMIN_API_KEY` is configured
 
 ## OpenAI integration
 
@@ -57,6 +60,7 @@ Set these in your hosting provider:
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
 DATABASE_URL=postgresql://user:password@host:5432/database
+ADMIN_API_KEY=replace_with_a_long_random_secret
 PORT=3000
 ```
 
@@ -89,6 +93,15 @@ Use this path for container or platform health checks:
 
 ```bash
 GET /api/health
+```
+
+### Waitlist admin export
+
+To export waitlist entries, configure `ADMIN_API_KEY` and call one of these:
+
+```bash
+curl -H "x-admin-key: your_admin_api_key" https://your-app.example.com/api/admin/waitlist
+curl -H "Authorization: Bearer your_admin_api_key" "https://your-app.example.com/api/admin/waitlist?format=csv"
 ```
 
 ### Waitlist storage
