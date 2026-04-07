@@ -1,11 +1,11 @@
 # Lychee AI
 
-A starter platform for Lychee AI with a Node.js backend and a static frontend.
+A starter platform for Lychee AI with a Node.js backend and a polished Vigil AI-style frontend.
 
 ## Project structure
 
-- `frontend/` - static HTML, CSS, and JavaScript files
-- `backend/` - Express server that serves the frontend and a sample AI API route
+- `frontend/` - static landing page and scanner UI
+- `backend/` - Express server that serves the frontend and AI scan endpoint
 
 ## Setup
 
@@ -21,16 +21,16 @@ A starter platform for Lychee AI with a Node.js backend and a static frontend.
    ```
 
 3. Open your browser at:
-   ```
+   ```bash
    http://localhost:3000
    ```
 
-## AI integration
+## AI scan endpoint
 
-The frontend sends prompts to `POST /api/ai`.
+- `POST /api/scan` accepts JSON `{ input: string }`
+- Returns a structured threat verdict object for the UI
 
-- If `OPENAI_API_KEY` is set in `.env`, the server will use OpenAI to generate responses.
-- If no API key is configured, the server returns a placeholder response.
+## OpenAI integration
 
 Create a `.env` file in `backend/` with:
 
@@ -38,12 +38,9 @@ Create a `.env` file in `backend/` with:
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-## API
-
-- `GET /api/hello` - returns a simple status message
-- `POST /api/ai` - accepts JSON `{ prompt: string }`
+If no API key is configured, the server will return a safe placeholder scan result.
 
 ## Notes
 
 - `node_modules` and `.env` are ignored by Git.
-- Use `npm run dev` in `backend/` for automatic reloads.
+- Use `npm run dev` in `backend/` for hot reloading while developing.
