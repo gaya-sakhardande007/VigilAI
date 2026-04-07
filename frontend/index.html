@@ -244,6 +244,28 @@
   .v-label { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
   .v-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
   .result-body { padding: 0 1.25rem 1.25rem; border-top: 0.5px solid var(--border); }
+  .result-notice {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    border: 0.5px solid rgba(255,190,0,0.28);
+    background: rgba(255,190,0,0.08);
+  }
+  .result-notice strong {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #FFD46B;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .result-notice span {
+    font-size: 13px;
+    color: rgba(244,247,255,0.82);
+    line-height: 1.6;
+  }
   .rs { margin-top: 1rem; }
   .rs-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
   .rs-text { font-size: 13px; color: rgba(244,247,255,0.85); line-height: 1.6; }
@@ -311,6 +333,7 @@
   .waitlist-btn:hover { opacity: 0.88; }
   .waitlist-note { font-size: 12px; color: var(--muted); margin-top: 10px; }
   .waitlist-success { color: var(--accent2); font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; display: none; margin-top: 1rem; }
+  .waitlist-error { color: #FFBE00; font-family: 'DM Sans', sans-serif; font-size: 14px; display: none; margin-top: 0.85rem; }
  
   footer {
     position: relative; z-index: 1;
@@ -505,6 +528,7 @@
     </div>
     <p class="waitlist-note">No spam. No credit card. Unsubscribe anytime.</p>
     <div class="waitlist-success" id="waitlistSuccess">You're on the list! We'll be in touch soon.</div>
+    <div class="waitlist-error" id="waitlistError"></div>
   </div>
 </div>
  
@@ -571,13 +595,53 @@ function renderResult(r) {
     </div>`;
 }
  
-function joinWaitlist() {
-  const email = document.getElementById('emailInput').value.trim();
-  if (!email || !email.includes('@')) { document.getElementById('emailInput').focus(); return; }
-  document.getElementById('waitlistSuccess').style.display = 'block';
-  document.getElementById('emailInput').value = '';
-  document.querySelector('.waitlist-btn').disabled = true;
-  document.querySelector('.waitlist-btn').textContent = 'Joined!';
+async function joinWaitlist() {
+  const emailInput = document.getElementById('emailInput');
+  const waitlistSuccess = document.getElementById('waitlistSuccess');
+  const waitlistError = document.getElementById('waitlistError');
+  const waitlistButton = document.querySelector('.waitlist-btn');
+  const email = emailInput.value.trim();
+
+  waitlistSuccess.style.display = 'none';
+  waitlistError.style.display = 'none';
+  waitlistError.textContent = '';
+
+  if (!email || !email.includes('@')) {
+    waitlistError.textContent = 'Enter a valid email address.';
+    waitlistError.style.display = 'block';
+    emailInput.focus();
+    return;
+  }
+
+  waitlistButton.disabled = true;
+  waitlistButton.textContent = 'Joining...';
+
+  try {
+    const response = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      waitlistError.textContent = data.error || 'Failed to join waitlist.';
+      waitlistError.style.display = 'block';
+      return;
+    }
+
+    waitlistSuccess.textContent = data.alreadyJoined
+      ? 'You are already on the waitlist.'
+      : "You're on the list! We'll be in touch soon.";
+    waitlistSuccess.style.display = 'block';
+    emailInput.value = '';
+  } catch (error) {
+    waitlistError.textContent = 'Request failed. Please try again.';
+    waitlistError.style.display = 'block';
+  } finally {
+    waitlistButton.disabled = false;
+    waitlistButton.textContent = 'Join waitlist';
+  }
 }
  
 document.getElementById('scanInput').addEventListener('keydown', e => {

@@ -1,22 +1,49 @@
 const express = require('express');
+const fs = require('fs/promises');
 const path = require('path');
-const { Configuration, OpenAIApi } = require('openai');
+const { OpenAI } = require('openai');
+const { Pool } = require('pg');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const waitlistFilePath = path.join(__dirname, 'data', 'waitlist.json');
+const databaseUrl = process.env.DATABASE_URL || '';
 
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY }))
+const openaiKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_key_here'
+  ? process.env.OPENAI_API_KEY
   : null;
+
+const openai = openaiKey
+  ? new OpenAI({ apiKey: openaiKey })
+  : null;
+
+const waitlistPool = databaseUrl
+  ? new Pool({
+      connectionString: databaseUrl,
+      ssl: databaseUrl.includes('localhost') ? false : { rejectUnauthorized: false }
+    })
+  : null;
+
+const waitlistStoreType = waitlistPool ? 'postgres' : 'file';
+const waitlistStoreReady = ensureWaitlistStore();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.get('/api/hello', (req, res) => {
   res.json({
-    message: 'Welcome to Lychee AI!',
+    message: 'Welcome to Vigil AI!',
     status: 'ready'
+  });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'vigil-ai',
+    openaiConfigured: Boolean(openaiKey),
+    waitlistStorage: waitlistStoreType
   });
 });
 
@@ -34,7 +61,8 @@ function buildFallbackScanResult(input) {
       detail: 'The submitted text or URL contains suspicious markers associated with phishing and fake login pages. Do not click links or enter credentials.',
       signals: ['phishing URL', 'urgent verification request', 'shortened link'],
       signal_types: ['danger', 'warning', 'warning'],
-      action: 'Do not interact with this message. Delete it and verify the sender independently.'
+      action: 'Do not interact with this message. Delete it and verify the sender independently.',
+      source: 'fallback'
     };
   }
 
@@ -46,7 +74,8 @@ function buildFallbackScanResult(input) {
       detail: 'The input uses a known and trusted URL format with no obvious scam indicators. It is likely safe, although you should still verify the source.',
       signals: ['trusted domain', 'no scam indicators'],
       signal_types: ['safe', 'safe'],
-      action: 'Proceed carefully and confirm the sender if you are unsure.'
+      action: 'Proceed carefully and confirm the sender if you are unsure.',
+      source: 'fallback'
     };
   }
 
@@ -57,7 +86,8 @@ function buildFallbackScanResult(input) {
     detail: 'The message or URL contains elements that are often used in phishing and scam attempts, but it does not match a clearly malicious pattern.',
     signals: ['unusual domain', 'possible phishing language'],
     signal_types: ['warning', 'warning'],
-    action: 'Avoid clicking links until you verify the origin of the message.'
+    action: 'Avoid clicking links until you verify the origin of the message.',
+    source: 'fallback'
   };
 }
 
@@ -67,6 +97,88 @@ function parseJSONResponse(text) {
     .replace(/\n/g, ' ')
     .trim();
   return JSON.parse(cleaned);
+}
+
+function normalizeEmail(email) {
+  return email.trim().toLowerCase();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+async function ensureWaitlistStore() {
+  if (!waitlistPool) {
+    return;
+  }
+
+  await waitlistPool.query(`
+    CREATE TABLE IF NOT EXISTS waitlist_entries (
+      email TEXT PRIMARY KEY,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+}
+
+async function readWaitlistEntries() {
+  try {
+    const file = await fs.readFile(waitlistFilePath, 'utf8');
+    const parsed = JSON.parse(file);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
+async function saveWaitlistEntries(entries) {
+  await fs.writeFile(waitlistFilePath, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
+}
+
+async function joinWaitlist(email) {
+  if (waitlistPool) {
+    await waitlistStoreReady;
+
+    const result = await waitlistPool.query(
+      `
+        INSERT INTO waitlist_entries (email)
+        VALUES ($1)
+        ON CONFLICT (email) DO NOTHING
+        RETURNING email
+      `,
+      [email]
+    );
+
+    return {
+      alreadyJoined: result.rowCount === 0,
+      email
+    };
+  }
+
+  const entries = await readWaitlistEntries();
+  const existingEntry = entries.find((entry) => entry.email === email);
+
+  if (existingEntry) {
+    return {
+      alreadyJoined: true,
+      email
+    };
+  }
+
+  entries.push({
+    email,
+    createdAt: new Date().toISOString()
+  });
+
+  await saveWaitlistEntries(entries);
+
+  return {
+    alreadyJoined: false,
+    email
+  };
 }
 
 app.post('/api/scan', async (req, res) => {
@@ -81,7 +193,7 @@ app.post('/api/scan', async (req, res) => {
   }
 
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
         {
@@ -94,12 +206,47 @@ app.post('/api/scan', async (req, res) => {
       max_tokens: 260
     });
 
-    const text = response.data.choices?.[0]?.message?.content || '';
+    const text = response.choices?.[0]?.message?.content || '';
     const result = parseJSONResponse(text);
-    return res.json(result);
+    return res.json({ ...result, source: 'openai' });
   } catch (error) {
+    const statusCode = error?.status || error?.response?.status;
     console.error('OpenAI error:', error?.response?.data || error.message || error);
+
+    if (statusCode === 429) {
+      return res.json({
+        ...buildFallbackScanResult(input),
+        fallback_reason: 'openai_quota_exceeded'
+      });
+    }
+
     return res.status(500).json({ error: 'Failed to generate AI response.' });
+  }
+});
+
+app.post('/api/waitlist', async (req, res) => {
+  const email = typeof req.body?.email === 'string' ? normalizeEmail(req.body.email) : '';
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required.' });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Enter a valid email address.' });
+  }
+
+  try {
+    const result = await joinWaitlist(email);
+
+    return res.status(result.alreadyJoined ? 200 : 201).json({
+      ok: true,
+      alreadyJoined: result.alreadyJoined,
+      email: result.email,
+      storage: waitlistStoreType
+    });
+  } catch (error) {
+    console.error('Waitlist error:', error.message || error);
+    return res.status(500).json({ error: 'Failed to join waitlist.' });
   }
 });
 
@@ -108,5 +255,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Lychee AI backend running on http://localhost:${PORT}`);
+  console.log(`Vigil AI backend running on http://localhost:${PORT}`);
 });
