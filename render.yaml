@@ -17,7 +17,7 @@ services:
       - key: ENFORCE_CANONICAL_HOST
         value: "false"
       - key: PUBLIC_DOMAIN
-        value: www.vigilai.com
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: DATABASE_URL
