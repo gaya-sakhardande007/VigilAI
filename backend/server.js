@@ -17,6 +17,9 @@ const reportsFilePath = path.join(dataDir, 'reports.json');
 
 const databaseUrl = process.env.DATABASE_URL || '';
 const adminApiKey = process.env.ADMIN_API_KEY || '';
+const publicDomain = (process.env.PUBLIC_DOMAIN || '').trim().toLowerCase();
+const enforceCanonicalHost = process.env.ENFORCE_CANONICAL_HOST === 'true';
+const canonicalProtocol = (process.env.CANONICAL_PROTOCOL || 'https').toLowerCase() === 'http' ? 'http' : 'https';
 
 const openaiKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_key_here'
   ? process.env.OPENAI_API_KEY
@@ -42,6 +45,30 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   next();
 });
+
+app.use((req, res, next) => {
+  if (!enforceCanonicalHost || !publicDomain) {
+    return next();
+  }
+
+  if (req.path === '/api/health') {
+    return next();
+  }
+
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    return next();
+  }
+
+  const forwardedHost = (req.headers['x-forwarded-host'] || '').toString().split(',')[0].trim();
+  const requestHost = (forwardedHost || req.headers.host || '').toString().toLowerCase();
+
+  if (!requestHost || requestHost === publicDomain) {
+    return next();
+  }
+
+  return res.redirect(308, `${canonicalProtocol}://${publicDomain}${req.originalUrl || '/'}`);
+});
+
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 const scanLimiter = rateLimit({

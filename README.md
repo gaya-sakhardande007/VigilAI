@@ -81,7 +81,28 @@ OPENAI_API_KEY=your_openai_api_key_here
 DATABASE_URL=postgresql://user:password@host:5432/database
 ADMIN_API_KEY=replace_with_a_long_random_secret
 PORT=3000
+CANONICAL_PROTOCOL=https
+ENFORCE_CANONICAL_HOST=false
+PUBLIC_DOMAIN=
 ```
+
+### Custom domain (so users do not use the Render URL)
+
+You can point a real domain (for example `vigilai.com`) to this app and force all traffic to that domain.
+
+1. Buy or use an existing domain from a registrar (Cloudflare, Namecheap, GoDaddy, etc.).
+2. In Render, open the `vigil-ai` service and add a Custom Domain:
+   - Add your apex domain (for example `vigilai.com`)
+   - Add `www.vigilai.com` if you want both
+3. At your DNS provider, create the records Render shows you (usually CNAME for `www`, ALIAS/ANAME or A records for apex).
+4. Wait until Render marks the domain as verified and SSL certificate as active.
+5. Set these environment variables in Render:
+   - `PUBLIC_DOMAIN=vigilai.com`
+   - `CANONICAL_PROTOCOL=https`
+   - `ENFORCE_CANONICAL_HOST=true`
+6. Redeploy the service.
+
+After this, users can visit your custom domain directly, and requests to non-canonical hosts are redirected to your domain.
 
 ### Docker deployment
 

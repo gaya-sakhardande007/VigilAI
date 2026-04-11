@@ -12,6 +12,12 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: CANONICAL_PROTOCOL
+        value: https
+      - key: ENFORCE_CANONICAL_HOST
+        value: "false"
+      - key: PUBLIC_DOMAIN
+        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: DATABASE_URL
