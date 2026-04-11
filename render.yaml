@@ -15,7 +15,7 @@ services:
       - key: CANONICAL_PROTOCOL
         value: https
       - key: ENFORCE_CANONICAL_HOST
-        value: "true"
+        value: "false"
       - key: PUBLIC_DOMAIN
         value: www.vigilai.com
       - key: OPENAI_API_KEY
