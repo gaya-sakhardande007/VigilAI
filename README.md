@@ -127,6 +127,22 @@ To deploy on Render:
 
 Render will build from the existing Dockerfile, so there is no separate build command to maintain.
 
+### Vercel deployment (non-Render public URL)
+
+This repo is configured for Vercel via [vercel.json](vercel.json). Deploying to Vercel gives you a public URL like `https://your-project.vercel.app`.
+
+1. Import this GitHub repository into Vercel.
+2. Set the project root to repository root (`lychee-ai/`).
+3. Add environment variables in Vercel:
+   - `OPENAI_API_KEY`
+   - `DATABASE_URL` (optional; if omitted, waitlist falls back to file storage)
+   - `ADMIN_API_KEY` (optional)
+4. Deploy.
+
+Notes:
+- `ENFORCE_CANONICAL_HOST` should stay `false` unless you own and configure a custom domain.
+- Vercel automatically provides HTTPS for the `*.vercel.app` URL.
+
 ### Health check
 
 Use this path for container or platform health checks:
