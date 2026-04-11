@@ -591,4 +591,52 @@ try {
 applyMode('deep');
 renderFingerprint(analyzeInputLocal(''));
 setupRevealAnimations();
-loadIntel();
+
+// Wake-up detection and keep-alive for Render free tier
+(function initWakeUp() {
+  const banner = document.getElementById('wakeUpBanner');
+  const msg = document.getElementById('wakeUpMsg');
+  let wakeTimer = null;
+  let elapsed = 0;
+
+  const messages = [
+    'Free hosting takes ~20\u202fseconds on first visit. Hang tight.',
+    'Still waking up\u2026 almost there.',
+    'Taking a little longer than usual\u2014 server loading.',
+    'Nearly ready. Thanks for your patience.'
+  ];
+
+  function showBanner() {
+    banner.hidden = false;
+    wakeTimer = setInterval(() => {
+      elapsed += 5;
+      const idx = Math.min(Math.floor(elapsed / 10), messages.length - 1);
+      msg.textContent = messages[idx];
+    }, 5000);
+  }
+
+  function hideBanner() {
+    banner.hidden = true;
+    clearInterval(wakeTimer);
+  }
+
+  // Show banner only if health takes > 2 seconds
+  const slowTimer = setTimeout(showBanner, 2000);
+
+  fetch('/api/health', { cache: 'no-store' })
+    .then(() => {
+      clearTimeout(slowTimer);
+      hideBanner();
+      loadIntel();
+    })
+    .catch(() => {
+      clearTimeout(slowTimer);
+      hideBanner();
+      loadIntel();
+    });
+
+  // Keep-alive: ping health every 8 minutes while page is open
+  setInterval(() => {
+    fetch('/api/health', { cache: 'no-store' }).catch(() => {});
+  }, 8 * 60 * 1000);
+})();
