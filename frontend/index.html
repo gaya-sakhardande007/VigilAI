@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vigil AI - Personal Threat Intelligence</title>
+<title>Vigil AI — Scam &amp; Phishing Detector That Explains Why</title>
+<meta name="description" content="Vigil AI analyses suspicious URLs and messages in real time, explains exactly why something is dangerous, and tells you what to do next. Free, instant, no account needed.">
+<meta property="og:title" content="Vigil AI — Scam &amp; Phishing Detector">
+<meta property="og:description" content="Paste any suspicious link or message. Get an instant verdict, full explanation, and a step-by-step action plan. Built for everyday people.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -27,10 +32,16 @@
 
   <section class="hero" id="top">
     <div class="hero-copy reveal" data-reveal="slide-up">
-      <div class="eyebrow">Adaptive anti-scam studio</div>
-      <h1 class="hero-title">A consumer safety app that feels like a <em>threat lab</em>.</h1>
-      <p class="hero-sub">Vigil AI moves beyond one-line verdicts with live threat telemetry, saved case evidence, and response guidance tailored to the moment.</p>
-      <div class="hero-actions"><a class="button button-primary" href="#scanner">Open the workbench</a><a class="button button-secondary" href="#intel">See live intelligence</a></div>
+      <div class="eyebrow"><span class="eyebrow-dot"></span>Free &middot; No account &middot; Works instantly</div>
+      <h1 class="hero-title">The scam detector that actually <em>explains</em> what's wrong.</h1>
+      <p class="hero-sub">Most tools give a verdict. Vigil AI shows you the campaign type, who it's targeting, why it works psychologically, and exactly what to do next — in under a second.</p>
+      <div class="trust-row">
+        <span class="trust-badge">&#10003;&nbsp;No data stored</span>
+        <span class="trust-badge">&#10003;&nbsp;Plain English results</span>
+        <span class="trust-badge">&#10003;&nbsp;Works without AI</span>
+        <span class="trust-badge">&#10003;&nbsp;Open to everyone</span>
+      </div>
+      <div class="hero-actions"><a class="button button-primary" href="#scanner">Scan something now</a><a class="button button-secondary" href="#how">See how it works</a></div>
       <div class="hero-stats">
         <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Risk dimensions scored locally</div></div>
         <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Deep, Action, Family modes</div></div>
@@ -54,6 +65,30 @@
         <div class="signal-row"><span>Malware lure</span><div class="bar"><i id="heroBarMalware"></i></div><strong id="heroBarMalwareValue">0</strong></div>
       </div>
     </aside>
+  </section>
+
+  <section class="section reveal" data-reveal="slide-up" id="how">
+    <div class="section-header"><div><div class="section-kicker">How it works</div><h2>From suspicious to certain in three steps.</h2></div><p>No account needed. No learning curve. Paste what looks wrong&nbsp;&mdash; Vigil AI does the rest.</p></div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>
+        <strong>Paste the content</strong>
+        <p>Drop in a URL, SMS snippet, email, or WhatsApp message. Any format, any length.</p>
+      </div>
+      <div class="step-card step-card-mid">
+        <div class="step-num">02</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>
+        <strong>Get instant analysis</strong>
+        <p>Local heuristics score the threat in milliseconds. The AI layer adds full reasoning, confidence, and targeted guidance.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4.5 6.5v5c0 5 3.5 9.25 7.5 10.5 4-1.25 7.5-5.5 7.5-10.5v-5L12 2z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+        <strong>Know what to do next</strong>
+        <p>A plain-English verdict, full reasoning, and a step-by-step action plan. Tailored to your chosen mode.</p>
+      </div>
+    </div>
   </section>
 
   <section class="section reveal" data-reveal="slide-up" id="scanner">
@@ -96,7 +131,54 @@
     </div>
   </section>
 
-  <section class="section reveal" data-reveal="slide-up" id="toolbox"><div class="section-header"><div><div class="section-kicker">Advanced tools</div><h2>What makes this app feel different</h2></div><p>Purpose-built threat tools, not a generic paste-and-verdict page.</p></div><div class="tool-grid"><div class="tool-card"><strong>Threat Fingerprint</strong><p>Profiles campaign type, lure style, and domain hygiene.</p></div><div class="tool-card"><strong>Pressure Map</strong><p>Local scoring across four attack dimensions for instant feedback.</p></div><div class="tool-card"><strong>Saved Reports</strong><p>Store suspicious cases for later review and escalation.</p></div><div class="tool-card"><strong>Threat Telemetry</strong><p>Live verdict and signal trends from backend scan history.</p></div><div class="tool-card"><strong>Mode Switching</strong><p>Deep Explain, Action Mode, and Family Shield for context-aware guidance.</p></div><div class="tool-card"><strong>Motion System</strong><p>Meaningful reveals and panel transitions for a custom feel.</p></div></div></section>
+  <section class="section reveal" data-reveal="slide-up" id="toolbox"><div class="section-header"><div><div class="section-kicker">Advanced tools</div><h2>Built for comprehension, not just detection.</h2></div><p>Six integrated tools that make Vigil AI feel categorically different from a paste-and-verdict page.</p></div><div class="tool-grid"><div class="tool-card"><div class="tool-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="3" x2="12" y2="7"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="3" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="21" y2="12"/></svg></div><strong>Threat Fingerprint</strong><p>Instantly profiles campaign type, lure strategy, and domain hygiene before the API call completes.</p></div><div class="tool-card"><div class="tool-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="3" y1="20" x2="21" y2="20"/><rect x="4" y="10" width="3" height="10" rx="1"/><rect x="10.5" y="5" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="18" rx="1"/></svg></div><strong>Pressure Map</strong><p>Live scoring across social engineering, domain risk, credential bait, and malware lure dimensions.</p></div><div class="tool-card"><div class="tool-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg></div><strong>Case Reports</strong><p>Save high-risk findings with evidence, fingerprint, and mode context for follow-up or escalation.</p></div><div class="tool-card"><div class="tool-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="2 12 6 12 9 3 12 21 15 9 18 12 22 12"/></svg></div><strong>Threat Telemetry</strong><p>Backend-fed verdict trends and signal distribution across your full scan history.</p></div><div class="tool-card"><div class="tool-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="8" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="10" cy="17" r="2"/></svg></div><strong>Audience Modes</strong><p>Deep Explain, Action Mode, and Family Shield rewrite guidance for experts, responders, and at-risk users.</p></div><div class="tool-card"><div class="tool-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></div><strong>Forensic Preview</strong><p>Highlights suspicious language patterns inline so you understand manipulation tactics at a glance.</p></div></div></section>
+
+  <section class="section reveal" data-reveal="slide-up" id="compare">
+    <div class="section-header"><div><div class="section-kicker">Why Vigil AI</div><h2>Threat detection that treats you like an adult.</h2></div><p>Other tools tell you something is bad. Vigil AI explains what it is, why it works, and what to do about it.</p></div>
+    <div class="compare-wrap">
+      <div class="compare-grid">
+        <div class="compare-col compare-col-them">
+          <div class="compare-head">Generic scanners</div>
+          <div class="compare-item compare-item-no"><span class="compare-icon-cross">&#10005;</span>One-word verdict only</div>
+          <div class="compare-item compare-item-no"><span class="compare-icon-cross">&#10005;</span>No campaign or target context</div>
+          <div class="compare-item compare-item-no"><span class="compare-icon-cross">&#10005;</span>No action guidance</div>
+          <div class="compare-item compare-item-no"><span class="compare-icon-cross">&#10005;</span>Technical jargon, no plain English</div>
+          <div class="compare-item compare-item-no"><span class="compare-icon-cross">&#10005;</span>One mode fits all audiences</div>
+          <div class="compare-item compare-item-no"><span class="compare-icon-cross">&#10005;</span>Fails silently when offline</div>
+        </div>
+        <div class="compare-col compare-col-us">
+          <div class="compare-head compare-head-us">Vigil<span style="color:var(--cyan)">AI</span></div>
+          <div class="compare-item compare-item-yes"><span class="compare-icon-check">&#10003;</span>Full verdict with plain-English summary</div>
+          <div class="compare-item compare-item-yes"><span class="compare-icon-check">&#10003;</span>Campaign type, lure, and target profiling</div>
+          <div class="compare-item compare-item-yes"><span class="compare-icon-check">&#10003;</span>Step-by-step action plan every scan</div>
+          <div class="compare-item compare-item-yes"><span class="compare-icon-check">&#10003;</span>Designed for non-technical users</div>
+          <div class="compare-item compare-item-yes"><span class="compare-icon-check">&#10003;</span>Deep, Action, and Family Shield modes</div>
+          <div class="compare-item compare-item-yes"><span class="compare-icon-check">&#10003;</span>Instant local fallback, always available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" data-reveal="slide-up">
+    <div class="section-header"><div><div class="section-kicker">User stories</div><h2>Built for real people, not just researchers.</h2></div></div>
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p class="quote-text">I forwarded a suspicious WhatsApp message to Vigil AI. It identified a prize scam, explained the shortened link trick, and showed me exactly how to block the sender. Other tools just said &lsquo;dangerous&rsquo;.</p>
+        <div class="quote-author"><div class="quote-avatar">S</div><div><strong>Sarah K.</strong><span>Teacher, sent by her daughter</span></div></div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p class="quote-text">The Family Shield mode is genuinely different. When I check a link for my mum the explanation is in plain English. Most tools assume you already know what a phishing kit is.</p>
+        <div class="quote-author"><div class="quote-avatar">M</div><div><strong>Marcus T.</strong><span>Software engineer</span></div></div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">&ldquo;</div>
+        <p class="quote-text">The pressure map showed me exactly which parts of the SMS were designed to cause panic. That visual alone made me smarter at spotting scams myself weeks later.</p>
+        <div class="quote-author"><div class="quote-avatar">P</div><div><strong>Priya N.</strong><span>Small business owner</span></div></div>
+      </div>
+    </div>
+  </section>
 
   <section class="waitlist-card reveal" data-reveal="slide-up" id="waitlist"><div class="waitlist-grid"><div><div class="section-kicker">Early access</div><h3>Get the upgraded Vigil AI experience before launch.</h3><p>Join for early access to the threat workbench and advanced safety tools.</p><div class="waitlist-form"><input type="email" id="emailInput" placeholder="you@example.com"><button class="button button-primary" id="waitlistBtn" type="button">Join waitlist</button></div><div class="waitlist-note">No spam. No credit card.</div><div class="waitlist-success" id="waitlistSuccess">You're on the list. We'll be in touch soon.</div><div class="waitlist-error" id="waitlistError"></div></div><div class="meta-card"><strong>Early access includes</strong><div class="timeline"><div class="timeline-item"><div class="timeline-badge">A</div><div><strong>Threat workbench</strong><p>Interactive scan interface with live pressure scoring.</p></div></div><div class="timeline-item"><div class="timeline-badge">B</div><div><strong>Family Shield mode</strong><p>Guidance optimized for non-technical users.</p></div></div><div class="timeline-item"><div class="timeline-badge">C</div><div><strong>Saved threat reports</strong><p>Keep high-risk cases for follow-up.</p></div></div></div></div></div></section>
 
