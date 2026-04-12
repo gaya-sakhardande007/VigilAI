@@ -17,9 +17,17 @@ const reportsFilePath = path.join(dataDir, 'reports.json');
 
 const databaseUrl = process.env.DATABASE_URL || '';
 const adminApiKey = process.env.ADMIN_API_KEY || '';
+const isServerlessRuntime = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const useInMemoryDataStore = isServerlessRuntime && !databaseUrl;
 const publicDomain = (process.env.PUBLIC_DOMAIN || '').trim().toLowerCase();
 const enforceCanonicalHost = process.env.ENFORCE_CANONICAL_HOST === 'true';
 const canonicalProtocol = (process.env.CANONICAL_PROTOCOL || 'https').toLowerCase() === 'http' ? 'http' : 'https';
+
+const memoryStore = {
+  waitlist: [],
+  scanHistory: [],
+  reports: []
+};
 
 const openaiKey = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_key_here'
   ? process.env.OPENAI_API_KEY
@@ -33,7 +41,7 @@ const waitlistPool = databaseUrl
     })
   : null;
 
-const waitlistStoreType = waitlistPool ? 'postgres' : 'file';
+const waitlistStoreType = waitlistPool ? 'postgres' : (useInMemoryDataStore ? 'memory' : 'file');
 const waitlistStoreReady = ensureWaitlistStore();
 const localDataReady = ensureLocalDataFiles();
 
@@ -201,6 +209,10 @@ async function ensureJsonFile(filePath) {
 }
 
 async function ensureLocalDataFiles() {
+  if (useInMemoryDataStore) {
+    return;
+  }
+
   await fs.mkdir(dataDir, { recursive: true });
   await Promise.all([
     ensureJsonFile(waitlistFilePath),
@@ -209,13 +221,40 @@ async function ensureLocalDataFiles() {
   ]);
 }
 
+function getMemoryStoreForPath(filePath) {
+  if (filePath === waitlistFilePath) {
+    return memoryStore.waitlist;
+  }
+  if (filePath === scanHistoryFilePath) {
+    return memoryStore.scanHistory;
+  }
+  if (filePath === reportsFilePath) {
+    return memoryStore.reports;
+  }
+  return null;
+}
+
 async function readJsonArray(filePath) {
+  if (useInMemoryDataStore) {
+    const entries = getMemoryStoreForPath(filePath);
+    return entries ? [...entries] : [];
+  }
+
   const content = await fs.readFile(filePath, 'utf8');
   const parsed = JSON.parse(content);
   return Array.isArray(parsed) ? parsed : [];
 }
 
 async function writeJsonArray(filePath, entries) {
+  if (useInMemoryDataStore) {
+    const storeEntries = getMemoryStoreForPath(filePath);
+    if (storeEntries) {
+      storeEntries.length = 0;
+      storeEntries.push(...entries);
+    }
+    return;
+  }
+
   await fs.writeFile(filePath, `${JSON.stringify(entries, null, 2)}\n`, 'utf8');
 }
 
